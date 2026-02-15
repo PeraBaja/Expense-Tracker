@@ -1,4 +1,14 @@
 import argparse
+from dataclasses import dataclass, field, Field
+
+
+@dataclass
+class ArgsSchema:
+    action: str
+    description: str | None = field(default=None)
+    id: int | None = field(default=None)
+    amount: int | None = field(default=None)
+
 
 if __name__ == "__main__":
     argparser: argparse.ArgumentParser = argparse.ArgumentParser(
@@ -16,5 +26,5 @@ if __name__ == "__main__":
 
     delete_parser = subparsers.add_parser("list")
 
-    args = argparser.parse_args()
+    args = ArgsSchema(**vars(argparser.parse_args()))
     print(args)
