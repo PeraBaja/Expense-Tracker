@@ -34,7 +34,8 @@ def create_json_file():
     if not os.path.exists(
         FILE_PATH,
     ):
-        open(FILE_PATH, "x")
+        with open(FILE_PATH, "x") as file:
+            file.write("[]")
 
 
 if __name__ == "__main__":
