@@ -4,6 +4,7 @@ from datetime import date
 import json
 from ExpenseRecord import ExpenseRecord
 from json_extensions import DateTimeDecoder, DateTimeEncoder
+from type_validators import positive_float
 
 
 @dataclass
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     subparsers = argparser.add_subparsers(dest="action", required=True)
     add_parser = subparsers.add_parser("add")
     add_parser.add_argument("--description", "-d", required=True)
-    add_parser.add_argument("--amount", "-a", type=int, required=True)
+    add_parser.add_argument("--amount", "-a", type=positive_float, required=True)
     delete_parser = subparsers.add_parser("delete")
     delete_parser.add_argument("--id", required=True, type=int)
 
