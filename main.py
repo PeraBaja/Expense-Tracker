@@ -112,8 +112,13 @@ if __name__ == "__main__":
         case "add":
             if args.amount == None or args.description == None:
                 raise AttributeError
+            biggest_id = (
+                max([expense.id for expense in expense_records])
+                if len(expense_records) > 0
+                else 0
+            )
             new_expense = ExpenseRecord(
-                amount=args.amount, description=args.description
+                id=biggest_id + 1, amount=args.amount, description=args.description
             )
             expense_records.append(new_expense)
             update_expense_records_json(expense_records)
