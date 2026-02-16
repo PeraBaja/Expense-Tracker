@@ -4,6 +4,6 @@ from datetime import datetime, date as Date
 
 @dataclass
 class ExpenseRecord:
-    amount: int
+    amount: float
     description: str
     date: Date = field(default=Date.today())
