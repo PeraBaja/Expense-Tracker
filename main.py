@@ -124,3 +124,11 @@ if __name__ == "__main__":
             expense_records.append(new_expense)
             update_expense_records_json(expense_records)
             print("expense added succesfully")
+        case "delete":
+            for expense in expense_records:
+                if expense.id == args.id:
+                    expense_records.remove(expense)
+                    update_expense_records_json(expense_records)
+                    print(f'Expense with description "{expense.description}" deleted')
+                    exit(0)
+            print(f"Expense with id {args.id} not found")
