@@ -28,7 +28,13 @@ def update_expense_records_json(expense_records: list[ExpenseRecord]):
 
 
 def create_json_file():
-    open("expense-records.json", "x")
+    import os
+
+    FILE_PATH = "expense-records.json"
+    if not os.path.exists(
+        FILE_PATH,
+    ):
+        open(FILE_PATH, "x")
 
 
 if __name__ == "__main__":
