@@ -1,5 +1,6 @@
 import argparse
 from dataclasses import dataclass, field, Field
+from datetime import date
 import json
 from ExpenseRecord import ExpenseRecord
 from json_extensions import DateTimeDecoder, DateTimeEncoder
@@ -38,6 +39,16 @@ def create_json_file():
             file.write("[]")
 
 
+def filter_by_month_in_last_year(expense_records: list) -> list[ExpenseRecord]:
+
+    def _(expense: ExpenseRecord):
+        return (
+            expense.date.month == args.month and expense.date.year == date.today().year
+        )
+
+    return list(filter(_, expense_records))
+
+
 if __name__ == "__main__":
     argparser: argparse.ArgumentParser = argparse.ArgumentParser(
         "expense tracker", description="tracker de gastos"
@@ -63,13 +74,47 @@ if __name__ == "__main__":
         case "list":
             for expense in expense_records:
                 print(expense)
+            if len(expense_records) == 0:
+                print("There's no expenses made")
         case "summary":
-            expense_summary = sum([expense.amount for expense in expense_records])
-            print(expense_summary)
+            if args.month:
+                expenses_filtered_by_month_for_last_year = filter_by_month_in_last_year(
+                    expense_records
+                )
+                expense_summary = sum(
+                    [
+                        expense.amount.__round__(2)
+                        for expense in expenses_filtered_by_month_for_last_year
+                    ]
+                )
+                month_names = [
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December",
+                ]
+                print(
+                    f"expense summary for {month_names[args.month - 1]}: ${expense_summary:.2f}"
+                )
+            else:
+                expense_summary = sum(
+                    [expense.amount.__round__(2) for expense in expense_records]
+                )
+                print(f"expense summary total: ${expense_summary:.2f}")
         case "add":
             if args.amount == None or args.description == None:
                 raise AttributeError
-            expense_records.append(
-                ExpenseRecord(amount=args.amount, description=args.description)
+            new_expense = ExpenseRecord(
+                amount=args.amount, description=args.description
             )
+            expense_records.append(new_expense)
             update_expense_records_json(expense_records)
+            print("expense added succesfully")
