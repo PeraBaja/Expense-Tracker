@@ -1,5 +1,8 @@
 import argparse
 from dataclasses import dataclass, field, Field
+import json
+from ExpenseRecord import ExpenseRecord
+from json_extensions import DateTimeDecoder, DateTimeEncoder
 
 
 @dataclass
@@ -8,6 +11,24 @@ class ArgsSchema:
     description: str | None = field(default=None)
     id: int | None = field(default=None)
     amount: int | None = field(default=None)
+    month: int | None = field(default=None)
+
+
+def get_expense_records_from_json() -> list[ExpenseRecord]:
+    with open("expense-records.json") as file:
+        data = json.load(file, cls=DateTimeDecoder)
+    return [ExpenseRecord(**expense) for expense in data]
+
+
+def update_expense_records_json(expense_records: list[ExpenseRecord]):
+    with open("expense-records.json", "w") as file:
+        json.dump(
+            [vars(expense) for expense in expense_records], file, cls=DateTimeEncoder
+        )
+
+
+def create_json_file():
+    open("expense-records.json", "x")
 
 
 if __name__ == "__main__":
@@ -27,4 +48,21 @@ if __name__ == "__main__":
     delete_parser = subparsers.add_parser("list")
 
     args = ArgsSchema(**vars(argparser.parse_args()))
+    create_json_file()
+    expense_records = get_expense_records_from_json()
     print(args)
+    match args.action:
+
+        case "list":
+            for expense in expense_records:
+                print(expense)
+        case "summary":
+            expense_summary = sum([expense.amount for expense in expense_records])
+            print(expense_summary)
+        case "add":
+            if args.amount == None or args.description == None:
+                raise AttributeError
+            expense_records.append(
+                ExpenseRecord(amount=args.amount, description=args.description)
+            )
+            update_expense_records_json(expense_records)
