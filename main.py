@@ -4,7 +4,7 @@ from datetime import date
 import json
 from ExpenseRecord import ExpenseRecord
 from json_extensions import DateTimeDecoder, DateTimeEncoder
-from type_validators import positive_float
+from type_validators import date_format, positive_float
 
 
 @dataclass
@@ -14,6 +14,7 @@ class ArgsSchema:
     id: int | None = field(default=None)
     amount: float | None = field(default=None)
     month: int | None = field(default=None)
+    date_made: date | None = field(default=None)
 
 
 def get_expense_records_from_json() -> list[ExpenseRecord]:
@@ -61,10 +62,16 @@ if __name__ == "__main__":
     delete_parser = subparsers.add_parser("delete")
     delete_parser.add_argument("--id", required=True, type=int)
 
-    delete_parser = subparsers.add_parser("summary")
-    delete_parser.add_argument("--month", type=int)
+    summary_parser = subparsers.add_parser("summary")
+    summary_parser.add_argument("--month", type=int)
 
-    delete_parser = subparsers.add_parser("list")
+    list_parser = subparsers.add_parser("list")
+
+    update_parser = subparsers.add_parser("update")
+    update_parser.add_argument("--id", required=True, type=int)
+    update_parser.add_argument("--description", "-d")
+    update_parser.add_argument("--amount", "-a", type=positive_float)
+    update_parser.add_argument("--date", "-dt", type=date_format, dest="date_made")
 
     args = ArgsSchema(**vars(argparser.parse_args()))
     create_json_file()
@@ -130,5 +137,31 @@ if __name__ == "__main__":
                     expense_records.remove(expense)
                     update_expense_records_json(expense_records)
                     print(f'Expense with description "{expense.description}" deleted')
+                    exit(0)
+            print(f"Expense with id {args.id} not found")
+        case "update":
+            for i in range(len(expense_records)):
+                current_id = expense_records[i].id
+                if current_id == args.id:
+                    print(
+                        f'Expense with description "{expense_records[i].description}" modified'
+                    )
+                    expense_records[i] = ExpenseRecord(
+                        current_id,
+                        amount=(
+                            args.amount if args.amount else expense_records[i].amount
+                        ),
+                        description=(
+                            args.description
+                            if args.description
+                            else expense_records[i].description
+                        ),
+                        date=(
+                            args.date_made
+                            if args.date_made
+                            else expense_records[i].date
+                        ),
+                    )
+                    update_expense_records_json(expense_records)
                     exit(0)
             print(f"Expense with id {args.id} not found")
