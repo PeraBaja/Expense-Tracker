@@ -1,10 +1,11 @@
 import argparse
-from dataclasses import dataclass, field, Field
+from dataclasses import dataclass, field, Field, fields
 from datetime import date
 import json
 from ExpenseRecord import ExpenseRecord
 from json_extensions import DateTimeDecoder, DateTimeEncoder
 from type_validators import date_format, positive_float
+from tabulate import tabulate
 
 
 @dataclass
@@ -80,8 +81,17 @@ if __name__ == "__main__":
     match args.action:
 
         case "list":
-            for expense in expense_records:
-                print(expense)
+            headers = [field.name for field in fields(ExpenseRecord)]
+            data = [vars(expense) for expense in expense_records]
+            for i in range(len(data)):
+                data[i]["amount"] = f"${data[i]["amount"]:.2f}"
+
+            print(
+                tabulate(
+                    data,
+                    headers="keys",
+                )
+            )
             if len(expense_records) == 0:
                 print("There's no expenses made")
         case "summary":
