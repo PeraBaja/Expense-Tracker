@@ -8,5 +8,6 @@ class ArgsSchema:
     description: str | None = field(default=None)
     id: int | None = field(default=None)
     amount: float | None = field(default=None)
+    category: str | None = field(default=None)
     month: int | None = field(default=None)
     date_made: date | None = field(default=None)

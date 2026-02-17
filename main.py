@@ -30,6 +30,7 @@ if __name__ == "__main__":
     add_parser = subparsers.add_parser("add")
     add_parser.add_argument("--description", "-d", required=True)
     add_parser.add_argument("--amount", "-a", type=positive_float, required=True)
+    add_parser.add_argument("--category", "-c")
     delete_parser = subparsers.add_parser("delete")
     delete_parser.add_argument("--id", required=True, type=int)
 
@@ -42,6 +43,7 @@ if __name__ == "__main__":
     update_parser.add_argument("--id", required=True, type=int)
     update_parser.add_argument("--description", "-d")
     update_parser.add_argument("--amount", "-a", type=positive_float)
+    update_parser.add_argument("--category", "-c")
     update_parser.add_argument("--date", "-dt", type=date_format, dest="date_made")
 
     args = ArgsSchema(**vars(argparser.parse_args()))
@@ -54,6 +56,7 @@ if __name__ == "__main__":
             headers = [field.name for field in fields(ExpenseRecord)]
             data = [vars(expense) for expense in expense_records]
             for i in range(len(data)):
+                data[i]["category"] = f"{data[i]["category"] or "-"}"
                 data[i]["amount"] = f"${data[i]["amount"]:.2f}"
 
             print(
@@ -106,7 +109,10 @@ if __name__ == "__main__":
                 else 0
             )
             new_expense = ExpenseRecord(
-                id=biggest_id + 1, amount=args.amount, description=args.description
+                id=biggest_id + 1,
+                amount=args.amount,
+                description=args.description,
+                category=args.category,
             )
             expense_records.append(new_expense)
             update_expense_records_json(expense_records)
@@ -140,6 +146,11 @@ if __name__ == "__main__":
                             args.date_made
                             if args.date_made
                             else expense_records[i].date
+                        ),
+                        category=(
+                            args.category
+                            if args.category
+                            else expense_records[i].category
                         ),
                     )
                     update_expense_records_json(expense_records)
