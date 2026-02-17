@@ -6,16 +6,7 @@ from ExpenseRecord import ExpenseRecord
 from json_extensions import DateTimeDecoder, DateTimeEncoder
 from type_validators import date_format, positive_float
 from tabulate import tabulate
-
-
-@dataclass
-class ArgsSchema:
-    action: str
-    description: str | None = field(default=None)
-    id: int | None = field(default=None)
-    amount: float | None = field(default=None)
-    month: int | None = field(default=None)
-    date_made: date | None = field(default=None)
+from ArgsSchema import ArgsSchema
 
 
 def get_expense_records_from_json() -> list[ExpenseRecord]:
