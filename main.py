@@ -22,6 +22,14 @@ def filter_by_month_in_last_year(expense_records: list) -> list[ExpenseRecord]:
     return list(filter(_, expense_records))
 
 
+def filter_by_category(expense_records: list) -> list[ExpenseRecord]:
+
+    def _(expense: ExpenseRecord):
+        return expense.category == args.category
+
+    return list(filter(_, expense_records))
+
+
 if __name__ == "__main__":
     argparser: argparse.ArgumentParser = argparse.ArgumentParser(
         "expense tracker", description="tracker de gastos"
@@ -38,6 +46,7 @@ if __name__ == "__main__":
     summary_parser.add_argument("--month", type=int)
 
     list_parser = subparsers.add_parser("list")
+    list_parser.add_argument("--category", "-c")
 
     update_parser = subparsers.add_parser("update")
     update_parser.add_argument("--id", required=True, type=int)
@@ -54,6 +63,11 @@ if __name__ == "__main__":
 
         case "list":
             headers = [field.name for field in fields(ExpenseRecord)]
+            expense_records = (
+                filter_by_category(expense_records)
+                if args.category
+                else expense_records
+            )
             data = [vars(expense) for expense in expense_records]
             for i in range(len(data)):
                 data[i]["category"] = f"{data[i]["category"] or "-"}"
