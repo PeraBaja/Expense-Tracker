@@ -2,6 +2,7 @@ import argparse
 from dataclasses import fields
 from datetime import date
 from ExpenseRecord import ExpenseRecord
+from csv_maniputalion import change_budget, create_budget_file, get_monthly_budgets
 from type_validators import date_format, positive_float
 from tabulate import tabulate
 from ArgsSchema import ArgsSchema
@@ -9,6 +10,21 @@ from json_manipulation import (
     create_json_file,
     update_expense_records_json,
     get_expense_records_from_json,
+)
+
+MONTH_NAMES = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 )
 
 
@@ -43,7 +59,9 @@ if __name__ == "__main__":
     delete_parser.add_argument("--id", required=True, type=int)
 
     summary_parser = subparsers.add_parser("summary")
-    summary_parser.add_argument("--month", type=int)
+    summary_parser.add_argument(
+        "--month", "-m", choices=[*[f"{i}" for i in range(1, 12 + 1)], *MONTH_NAMES]
+    )
 
     list_parser = subparsers.add_parser("list")
     list_parser.add_argument("--category", "-c")
@@ -55,8 +73,18 @@ if __name__ == "__main__":
     update_parser.add_argument("--category", "-c")
     update_parser.add_argument("--date", "-dt", type=date_format, dest="date_made")
 
+    budget_parser = subparsers.add_parser("budget")
+    budget_parser.add_argument(
+        "--month",
+        "-m",
+        choices=[*MONTH_NAMES, *[f"{i}" for i in range(1, 12 + 1)]],
+    )
+    budget_parser.add_argument("--amount", "-a", type=positive_float)
+    budget_parser.add_argument("--list", "-l", action="store_true")
+
     args = ArgsSchema(**vars(argparser.parse_args()))
     create_json_file()
+    create_budget_file()
     expense_records = get_expense_records_from_json()
     print(args)
     match args.action:
@@ -92,23 +120,12 @@ if __name__ == "__main__":
                         for expense in expenses_filtered_by_month_for_last_year
                     ]
                 )
-                month_names = [
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                ]
-                print(
-                    f"expense summary for {month_names[args.month - 1]}: ${expense_summary:.2f}"
+                month = (
+                    MONTH_NAMES[int(args.month) - 1]
+                    if args.month.isdigit()
+                    else args.month
                 )
+                print(f"expense summary for {month}: ${expense_summary:.2f}")
             else:
                 expense_summary = sum(
                     [expense.amount.__round__(2) for expense in expense_records]
@@ -169,4 +186,15 @@ if __name__ == "__main__":
                     )
                     update_expense_records_json(expense_records)
                     exit(0)
-            print(f"Expense with id {args.id} not found")
+                # In case not found any expense
+                print(f"Expense with id {args.id} not found")
+        case "budget":
+            if args.list:
+                monthly_budgets = [
+                    budget if budget >= 0 else "-" for budget in get_monthly_budgets()
+                ]
+
+                print(tabulate([monthly_budgets], headers=MONTH_NAMES))
+            if args.amount and args.month:
+                change_budget(args.month, args.amount)
+                print("budget added succesfully")
