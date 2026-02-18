@@ -28,12 +28,16 @@ MONTH_NAMES = (
 )
 
 
-def filter_by_month_in_last_year(expense_records: list) -> list[ExpenseRecord]:
+def filter_by_month_in_last_year(
+    expense_records: list, month: int
+) -> list[ExpenseRecord]:
 
     def _(expense: ExpenseRecord):
-        return (
-            expense.date.month == args.month and expense.date.year == date.today().year
+        print(
+            f"{expense.date.month}" == month,
+            expense.date.year == date.today().year,
         )
+        return expense.date.month == month and expense.date.year == date.today().year
 
     return list(filter(_, expense_records))
 
@@ -111,8 +115,13 @@ if __name__ == "__main__":
                 print("There's no expenses made")
         case "summary":
             if args.month:
+                month_number: int = (
+                    int(args.month)
+                    if args.month.isdigit()
+                    else MONTH_NAMES.index(args.month) + 1
+                )
                 expenses_filtered_by_month_for_last_year = filter_by_month_in_last_year(
-                    expense_records
+                    expense_records, month_number
                 )
                 expense_summary = sum(
                     [
@@ -120,12 +129,12 @@ if __name__ == "__main__":
                         for expense in expenses_filtered_by_month_for_last_year
                     ]
                 )
-                month = (
+                month_name = (
                     MONTH_NAMES[int(args.month) - 1]
                     if args.month.isdigit()
                     else args.month
                 )
-                print(f"expense summary for {month}: ${expense_summary:.2f}")
+                print(f"expense summary for {month_name}: ${expense_summary:.2f}")
             else:
                 expense_summary = sum(
                     [expense.amount.__round__(2) for expense in expense_records]
