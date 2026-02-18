@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 
 
 @dataclass
@@ -12,3 +13,4 @@ class ArgsSchema:
     month: str | None = field(default=None)
     date_made: date | None = field(default=None)
     list: bool | None = field(default=None)
+    to_path: Path | None = field(default=None)

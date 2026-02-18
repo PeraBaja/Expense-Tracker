@@ -1,8 +1,14 @@
 import argparse
 from dataclasses import fields
 from datetime import date
+from pathlib import Path
 from ExpenseRecord import ExpenseRecord
-from csv_maniputalion import change_budget, create_budget_file, get_monthly_budgets
+from csv_maniputalion import (
+    change_budget,
+    create_budget_file,
+    create_csv_export_file,
+    get_monthly_budgets,
+)
 from type_validators import date_format, positive_float
 from tabulate import tabulate
 from ArgsSchema import ArgsSchema
@@ -81,6 +87,9 @@ if __name__ == "__main__":
     )
     budget_parser.add_argument("--amount", "-a", type=positive_float)
     budget_parser.add_argument("--list", "-l", action="store_true")
+
+    export_parser = subparsers.add_parser("export")
+    export_parser.add_argument("--to_path", "-tp", type=Path, required=True)
 
     args = ArgsSchema(**vars(argparser.parse_args()))
     create_json_file()
@@ -219,3 +228,7 @@ if __name__ == "__main__":
             if args.amount and args.month:
                 change_budget(args.month, args.amount)
                 print("budget added succesfully")
+        case "export":
+            if args.to_path is None:
+                raise AttributeError
+            create_csv_export_file(expense_records, args.to_path)
