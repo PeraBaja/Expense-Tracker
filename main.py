@@ -33,10 +33,6 @@ def filter_by_month_in_last_year(
 ) -> list[ExpenseRecord]:
 
     def _(expense: ExpenseRecord):
-        print(
-            f"{expense.date.month}" == month,
-            expense.date.year == date.today().year,
-        )
         return expense.date.month == month and expense.date.year == date.today().year
 
     return list(filter(_, expense_records))
@@ -157,6 +153,22 @@ if __name__ == "__main__":
             expense_records.append(new_expense)
             update_expense_records_json(expense_records)
             print("expense added succesfully")
+
+            monthly_budget = get_monthly_budgets()[new_expense.date.month - 1]
+            if monthly_budget >= 0:
+                expenses_filtered_by_month_for_last_year = filter_by_month_in_last_year(
+                    expense_records, new_expense.date.month
+                )
+                expense_sum = sum(
+                    [
+                        expense.amount
+                        for expense in expenses_filtered_by_month_for_last_year
+                    ]
+                )
+                if expense_sum >= monthly_budget:
+                    print(
+                        f"Alert! The expense added exceeded the budget established for month {MONTH_NAMES[new_expense.date.month - 1]}\n {expense_sum} >= {monthly_budget}"
+                    )
         case "delete":
             for expense in expense_records:
                 if expense.id == args.id:
